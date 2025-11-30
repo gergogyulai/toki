@@ -9,10 +9,8 @@ CMD_PATH="$VENV_DIR/bin/toki"
 
 echo "📦 Setting up or updating Toki CLI..."
 
-# Ensure uv is installed
-if ! command -v uv &> /dev/null; then
-  echo "❌ uv not found. Please install it first:"
-  echo "   https://docs.astral.sh/uv/"
+if ! command -v uv &>/dev/null; then
+  echo "❌ uv is required. Install from https://docs.astral.sh/uv/"
   exit 1
 fi
 
@@ -25,16 +23,16 @@ else
   git -C "$INSTALL_DIR" pull --rebase --autostash || true
 fi
 
-# Ensure venv exists
+# Create venv if needed
 if [ ! -d "$VENV_DIR" ]; then
-  echo "🔧 Creating dedicated Toki environment..."
+  echo "🔧 Creating Toki virtual environment..."
   uv venv "$VENV_DIR"
 fi
 
-# Activate and check if reinstall needed
+# Activate venv
 source "$VENV_DIR/bin/activate"
 
-# Determine if source changed (simplified cache check)
+# Install or update only if repo changed
 HASH_FILE="$VENV_DIR/.toki_install_hash"
 CURRENT_HASH=$(cd "$INSTALL_DIR" && git rev-parse HEAD)
 LAST_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "none")
@@ -42,16 +40,16 @@ LAST_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "none")
 if [ "$CURRENT_HASH" != "$LAST_HASH" ]; then
   echo "📥 Installing / updating Toki package..."
   uv pip install -e "$INSTALL_DIR"
-  echo "$CURRENT_HASH" > "$HASH_FILE"
+  echo "$CURRENT_HASH" >"$HASH_FILE"
 else
-  echo "✅ Already up to date (commit $CURRENT_HASH)"
+  echo "✅ Already up to date ($CURRENT_HASH)"
 fi
 
-# Ensure BIN_DIR exists and symlink CLI
+# Ensure symlink to path
 mkdir -p "$BIN_DIR"
 ln -sf "$CMD_PATH" "$BIN_DIR/toki"
 
-# PATH hint
+# PATH reminder
 if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
   echo ""
   echo "⚠️  $BIN_DIR is not in your PATH."
@@ -60,4 +58,4 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
   echo ""
 fi
 
-echo "🎉 Toki CLI is ready! Run: toki --help"
+echo "🎉 Toki CLI ready! Try: toki --help"
