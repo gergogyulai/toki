@@ -29,9 +29,6 @@ if [ ! -d "$VENV_DIR" ]; then
   uv venv "$VENV_DIR"
 fi
 
-# Activate venv
-source "$VENV_DIR/bin/activate"
-
 # Install or update only if repo changed
 HASH_FILE="$VENV_DIR/.toki_install_hash"
 CURRENT_HASH=$(cd "$INSTALL_DIR" && git rev-parse HEAD)
@@ -39,7 +36,7 @@ LAST_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "none")
 
 if [ "$CURRENT_HASH" != "$LAST_HASH" ]; then
   echo "📥 Installing / updating Toki package..."
-  uv pip install -e "$INSTALL_DIR"
+  uv pip install --python "$VENV_DIR/bin/python" -e "$INSTALL_DIR"
   echo "$CURRENT_HASH" >"$HASH_FILE"
 else
   echo "✅ Already up to date ($CURRENT_HASH)"
