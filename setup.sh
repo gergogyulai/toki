@@ -36,7 +36,8 @@ LAST_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "none")
 
 if [ "$CURRENT_HASH" != "$LAST_HASH" ]; then
   echo "📥 Installing / updating Toki package..."
-  uv pip install --python "$VENV_DIR/bin/python" -e "$INSTALL_DIR"
+  # Unset PIP_USER to avoid conflicts with uv
+  env -u PIP_USER uv pip install --python "$VENV_DIR/bin/python" -e "$INSTALL_DIR"
   echo "$CURRENT_HASH" >"$HASH_FILE"
 else
   echo "✅ Already up to date ($CURRENT_HASH)"
